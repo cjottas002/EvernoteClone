@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace EvernoteClone.View
 {
@@ -32,6 +22,18 @@ namespace EvernoteClone.View
         private void SpeechButton_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void ContentTichTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            int amountOfCharacters = (new TextRange(contentRichTextBox.Document.ContentStart, contentRichTextBox.Document.ContentEnd)).Text.Length;
+
+            statusTextBlock.Text = $"Document lenght: {amountOfCharacters} characters";
+        }
+
+        private void BoldButton_Click(object sender, RoutedEventArgs e)
+        {
+            contentRichTextBox.Selection.ApplyPropertyValue(Inline.FontWeightProperty, FontWeights.Bold);
         }
     }
 }
