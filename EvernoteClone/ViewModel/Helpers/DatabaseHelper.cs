@@ -52,7 +52,7 @@ namespace EvernoteClone.ViewModel.Helpers
             return result;
         }       
         
-        public static List<T> Read<T>(T item) where T : new()
+        public static List<T> Read<T>() where T : new()
         {
             List<T> items;
 

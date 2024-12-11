@@ -2,63 +2,107 @@
 using EvernoteClone.ViewModel.Commands;
 using EvernoteClone.ViewModel.Helpers;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EvernoteClone.ViewModel
 {
-    public class NotesVM
+    public class NotesVM : INotifyPropertyChanged
     {
         public ObservableCollection<Notebook> Notebooks { get; set; }
 
-		private Notebook selectedNotebook;
+        private Notebook selectedNotebook;
 
-		public Notebook SelectedNotebook
-		{
-			get { return selectedNotebook; }
-			set 
-			{ 
-				selectedNotebook = value; 
-				//TODO: get notes
-			}
-		}
+        public Notebook SelectedNotebook
+        {
+            get { return selectedNotebook; }
+            set
+            {
+                selectedNotebook = value;
+                OnPropertyChanged(nameof(SelectedNotebook));
+                this.GetNotes();
+            }
+        }
 
-		public ObservableCollection<Note> Notes { get; set; }
+        public ObservableCollection<Note> Notes { get; set; }
 
-		public NewNotebookCommand NewNotebookCommand { get; set; }
-		public NewNoteCommand NewNoteCommand { get; set; }
+        public NewNotebookCommand NewNotebookCommand { get; set; }
+        public NewNoteCommand NewNoteCommand { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public NotesVM()
         {
-			this.NewNotebookCommand = new NewNotebookCommand(this);
-			this.NewNoteCommand = new NewNoteCommand(this);
+            this.NewNotebookCommand = new NewNotebookCommand(this);
+            this.NewNoteCommand = new NewNoteCommand(this);
+
+            Notebooks = new ObservableCollection<Notebook>();
+            Notes = new ObservableCollection<Note>();
+
+            this.GetNotebooks();
         }
 
-		public void CreateNotebook()
-		{
-			Notebook notebook = new Notebook()
-			{
-				Name = "New notebook"
-			};
+        public void CreateNotebook()
+        {
+            Notebook notebook = new Notebook()
+            {
+                Name = "Notebook"
+            };
 
-			DatabaseHelper.Insert(notebook);
-		}
+            DatabaseHelper.Insert(notebook);
 
-		public void CreateNote(int notebookId)
-		{
-			Note newNote = new Note()
-			{
-				NotebookId = notebookId,
-				CreatedAt = DateTime.Now,
-				UpdateAt = DateTime.Now,
-				Title = "New note"
-			};
+            this.GetNotebooks();
+        }
 
-			DatabaseHelper.Insert(newNote);
-		}
+        public void CreateNote(int notebookId)
+        {
+            Note newNote = new Note()
+            {
+                NotebookId = notebookId,
+                CreatedAt = DateTime.Now,
+                UpdateAt = DateTime.Now,
+                Title = $"Note for {DateTime.Now}"
+            };
+
+            DatabaseHelper.Insert(newNote);
+
+            this.GetNotes();
+        }
+
+        private void GetNotebooks()
+        {
+            var notebooks = DatabaseHelper.Read<Notebook>();
+
+            Notebooks.Clear();
+            foreach (var notebook in notebooks)
+            {
+                Notebooks.Add(notebook);
+            }
+        }
+
+        private void GetNotes()
+        {
+            if (this.SelectedNotebook is not null)
+            {
+
+                var notes = DatabaseHelper
+                    .Read<Note>()
+                    .Where(n => n.NotebookId == this.SelectedNotebook.Id)
+                    .ToList();
+
+                this.Notes.Clear();
+                foreach (var note in notes)
+                {
+                    this.Notes.Add(note);
+                }
+            }
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
     }
 }
