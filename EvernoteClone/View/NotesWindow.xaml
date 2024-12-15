@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EvernoteClone.View"
         xmlns:vm="clr-namespace:EvernoteClone.ViewModel"
+        xmlns:uc="clr-namespace:EvernoteClone.View.UserControls" 
         mc:Ignorable="d"
         Title="NotesWindow" Height="600" Width="600">
 
@@ -35,13 +36,14 @@
         </StatusBar>
 
         <ListView DockPanel.Dock="Left"
+                  Background="MidnightBlue"
                   Width="140"
                   SelectedItem="{Binding SelectedNotebook, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding Notebooks}">
             
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Name}" />
+                    <uc:DisplayNoteBookControl Notebook="{Binding}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
             
@@ -53,7 +55,7 @@
             
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Title}" />
+                    <uc:DisplayNoteControl Note="{Binding}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
 
