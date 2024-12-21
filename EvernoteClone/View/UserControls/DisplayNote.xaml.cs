@@ -8,7 +8,7 @@ namespace EvernoteClone.View.UserControls
     /// <summary>
     /// Interaction logic for DisplayNoteControl.xaml
     /// </summary>
-    public partial class DisplayNoteControl : UserControl
+    public partial class DisplayNote : UserControl
     {
         public Note Note
         {
@@ -18,16 +18,16 @@ namespace EvernoteClone.View.UserControls
 
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty NoteProperty =
-            DependencyProperty.Register("Note", typeof(Note), typeof(DisplayNoteControl), new PropertyMetadata(null, SetValues));
+            DependencyProperty.Register("Note", typeof(Note), typeof(DisplayNote), new PropertyMetadata(null, SetValues));
 
         private static void SetValues(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is DisplayNoteControl noteUserControl)
+            if (d is DisplayNote noteUserControl)
             {
                 noteUserControl.DataContext = noteUserControl.Note;
             }
         }
-        public DisplayNoteControl()
+        public DisplayNote()
         {
             InitializeComponent();
         }

@@ -19,7 +19,7 @@ namespace EvernoteClone.View.UserControls
     /// <summary>
     /// Interaction logic for DisplayNoteBookControl.xaml
     /// </summary>
-    public partial class DisplayNoteBookControl : UserControl
+    public partial class DisplayNoteBook : UserControl
     {
 
 
@@ -32,17 +32,17 @@ namespace EvernoteClone.View.UserControls
 
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty NotebookProperty =
-            DependencyProperty.Register("Notebook", typeof(Notebook), typeof(DisplayNoteBookControl), new PropertyMetadata(null, SetValues));
+            DependencyProperty.Register("Notebook", typeof(Notebook), typeof(DisplayNoteBook), new PropertyMetadata(null, SetValues));
 
         private static void SetValues(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is DisplayNoteBookControl notebookUserControl)
+            if (d is DisplayNoteBook notebookUserControl)
             {
                 notebookUserControl.DataContext = notebookUserControl.Notebook;
             }
         }
 
-        public DisplayNoteBookControl()
+        public DisplayNoteBook()
         {
             InitializeComponent();
         }

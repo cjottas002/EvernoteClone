@@ -11,12 +11,11 @@ namespace EvernoteClone.ViewModel
     public class NotesVM : INotifyPropertyChanged
     {
         public ObservableCollection<Notebook> Notebooks { get; set; }
-
+        public ObservableCollection<Note> Notes { get; set; }
         private Notebook selectedNotebook;
-
         public Notebook SelectedNotebook
         {
-            get { return selectedNotebook; }
+            get => selectedNotebook;
             set
             {
                 selectedNotebook = value;
@@ -25,10 +24,9 @@ namespace EvernoteClone.ViewModel
             }
         }
 
-        public ObservableCollection<Note> Notes { get; set; }
-
         public NewNotebookCommand NewNotebookCommand { get; set; }
         public NewNoteCommand NewNoteCommand { get; set; }
+        public EditCommand EditCommand { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -36,7 +34,7 @@ namespace EvernoteClone.ViewModel
         {
             this.NewNotebookCommand = new NewNotebookCommand(this);
             this.NewNoteCommand = new NewNoteCommand(this);
-
+            this.EditCommand = new EditCommand(this);
             Notebooks = new ObservableCollection<Notebook>();
             Notes = new ObservableCollection<Note>();
 
@@ -104,5 +102,9 @@ namespace EvernoteClone.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        public void StartEditing()
+        {
+            
+        }
     }
 }
