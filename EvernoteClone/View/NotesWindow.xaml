@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:EvernoteClone.View"
         xmlns:vm="clr-namespace:EvernoteClone.ViewModel"
         xmlns:uc="clr-namespace:EvernoteClone.View.UserControls"
@@ -10,10 +11,10 @@
         Title="NotesWindow" Height="600" Width="600">
 
     <Window.Resources>
-        <vm:NotesVM x:Key="vm" />
+        <vm:NotesVm x:Key="Vm" />
     </Window.Resources>
 
-    <DockPanel DataContext="{StaticResource vm}">
+    <DockPanel DataContext="{StaticResource Vm}">
 
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
@@ -44,15 +45,26 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
+                        
                         <uc:DisplayNoteBook Notebook="{Binding}">
                             <uc:DisplayNoteBook.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Rename" 
-                                              Command="{Binding Source={StaticResource vm}, Path=EditCommand}"/>
+                                              Command="{Binding Source={StaticResource Vm}, Path=EditCommand}"/>
                                 </ContextMenu>
                             </uc:DisplayNoteBook.ContextMenu>
                         </uc:DisplayNoteBook>
-                        <TextBox `/>
+                        
+                        <TextBox Text="{Binding Name}" 
+                                 Visibility="{Binding Source={StaticResource Vm}, Path=IsVisible}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding Source={StaticResource Vm}, Path=EndEditingCommand}"
+                                                           CommandParameter="{Binding}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </TextBox>
+                        
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -61,6 +73,7 @@
 
         <ListView DockPanel.Dock="Left"
                   Width="140"
+                  SelectedValue="{Binding SelectedNote, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding Notes}">
 
             <ListView.ItemTemplate>
@@ -74,25 +87,32 @@
         <ToolBarTray DockPanel.Dock="Top">
             <ToolBar>
                 <Button Content="Speech" Click="SpeechButton_Click" />
+                
                 <ToggleButton x:Name="BoldButton" Click="BoldButton_Click">
                     <TextBlock Text="B" FontWeight="Bold" />
                 </ToggleButton>
+                
                 <ToggleButton x:Name="ItalicButton" Click="ItalicButton_Click">
                     <TextBlock Text="I" FontStyle="Italic" />
                 </ToggleButton>
+                
                 <ToggleButton x:Name="UnderlineButton" Click="UnderlineButton_Click">
                     <TextBlock Text="U" TextDecorations="Underline" />
                 </ToggleButton>
+                
                 <ComboBox x:Name="FontFamilyComboBox" Width="100"
                           SelectionChanged="FontFamilyComboBox_SelectionChanged" />
+                
                 <ComboBox x:Name="FontSizeComboBox" Width="50" IsEditable="True"
                           TextBoxBase.TextChanged="FontSizeComboBox_TextChanged" />
+                
+                <Button Content="Save" Click="Button_Click"></Button>
             </ToolBar>
         </ToolBarTray>
 
         <Grid>
             <RichTextBox x:Name="ContentRichTextBox"
-                         TextChanged="ContentTichTextBox_TextChanged"
+                         TextChanged="ContentRichTextBox_TextChanged"
                          SelectionChanged="ContentRichTextBox_SelectionChanged" />
         </Grid>
 

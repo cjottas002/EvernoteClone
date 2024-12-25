@@ -8,9 +8,9 @@ using System.Windows.Input;
 
 namespace EvernoteClone.ViewModel.Commands
 {
-    public class NewNoteCommand(NotesVM vm) : ICommand
+    public class NewNoteCommand(NotesVm vm) : ICommand
     {
-        public NotesVM VM { get; set; } = vm;
+        public NotesVm VM { get; set; } = vm;
         public event EventHandler CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }

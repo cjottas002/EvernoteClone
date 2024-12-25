@@ -15,11 +15,11 @@ namespace EvernoteClone.ViewModel.Helpers
 
         public static bool Insert<T>(T item)
         {
-            bool result = false;
+            var result = false;
 
             using var conn = new SQLiteConnection(dbFile);
             conn.CreateTable<T>();
-            int rows = conn.Insert(item);
+            var rows = conn.Insert(item);
             if (rows > 0)
                 result = true;
            
@@ -28,11 +28,11 @@ namespace EvernoteClone.ViewModel.Helpers
 
         public static bool Update<T>(T item)
         {
-            bool result = false;
+            var result = false;
 
             using var conn = new SQLiteConnection(dbFile);
             conn.CreateTable<T>();
-            int rows = conn.Update(item);
+            var rows = conn.Update(item);
             if (rows > 0)
                 result = true;
            
@@ -41,11 +41,11 @@ namespace EvernoteClone.ViewModel.Helpers
         
         public static bool Delete<T>(T item)
         {
-            bool result = false;
+            var result = false;
 
             using var conn = new SQLiteConnection(dbFile);
             conn.CreateTable<T>();
-            int rows = conn.Delete(item);
+            var rows = conn.Delete(item);
             if (rows > 0)
                 result = true;
            

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Windows.Input;
+using EvernoteClone.Model;
 
 namespace EvernoteClone.ViewModel.Commands;
 
-public class EditCommand(NotesVm vm) : ICommand
+public class EndEditingCommand(NotesVm vm) : ICommand
 {
     public event EventHandler CanExecuteChanged;
     private NotesVm ViewModel { get; set; } = vm;
@@ -15,7 +16,8 @@ public class EditCommand(NotesVm vm) : ICommand
 
     public void Execute(object parameter)
     {
-        ViewModel.StartEditing();
+        if (parameter is Notebook notebook)
+            ViewModel.StopEditing(notebook);
     }
 
 }

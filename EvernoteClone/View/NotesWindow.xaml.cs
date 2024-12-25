@@ -1,12 +1,16 @@
-﻿using Microsoft.CognitiveServices.Speech;
-using Microsoft.CognitiveServices.Speech.Audio;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Media;
+using EvernoteClone.ViewModel;
+using EvernoteClone.ViewModel.Helpers;
+using Microsoft.CognitiveServices.Speech;
+using Microsoft.CognitiveServices.Speech.Audio;
 
 namespace EvernoteClone.View
 {
@@ -15,15 +19,30 @@ namespace EvernoteClone.View
     /// </summary>
     public partial class NotesWindow : Window
     {
+        private readonly NotesVm _viewModel;
         public NotesWindow()
         {
             InitializeComponent();
+
+            _viewModel = Resources["Vm"] as NotesVm;
+            if (_viewModel != null) _viewModel.SelectedNoteChanged += ViewModel_SelectedNoteChanged;
 
             var fontFamilies = Fonts.SystemFontFamilies.OrderBy(f => f.Source);
             FontFamilyComboBox.ItemsSource = fontFamilies;
 
             var fontSizes = new List<double>() { 8, 9, 10, 11, 12, 14, 16, 28, 48 };
             FontSizeComboBox.ItemsSource = fontSizes;
+        }
+
+        private void ViewModel_SelectedNoteChanged(object sender, EventArgs e)
+        {
+            ContentRichTextBox.Document.Blocks.Clear();
+            
+            if (_viewModel.SelectedNote?.FileLocation == null) return;
+            
+            var fs = new FileStream(_viewModel.SelectedNote.FileLocation, FileMode.Open);
+            var contents = new TextRange(ContentRichTextBox.Document.ContentStart, ContentRichTextBox.Document.ContentEnd);
+            contents.Load(fs, DataFormats.Rtf);
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -33,8 +52,8 @@ namespace EvernoteClone.View
 
         private async void SpeechButton_Click(object sender, RoutedEventArgs e)
         {
-            string region = "southcentralus";
-            string key = "xxxx"; // Azure Service Speech
+            const string region = "southcentralus";
+            const string key = "xxxx"; // Azure Service Speech
 
             var speechConfig = SpeechConfig.FromSubscription(key, region);
             using var audioConfig = AudioConfig.FromDefaultMicrophoneInput();
@@ -45,22 +64,18 @@ namespace EvernoteClone.View
 
         }
 
-        private void ContentTichTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void ContentRichTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            int amountOfCharacters = (new TextRange(ContentRichTextBox.Document.ContentStart, ContentRichTextBox.Document.ContentEnd)).Text.Length;
+            var amountOfCharacters = (new TextRange(ContentRichTextBox.Document.ContentStart, ContentRichTextBox.Document.ContentEnd)).Text.Length;
 
             StatusTextBlock.Text = $"Document lenght: {amountOfCharacters} characters";
         }
 
-        private void BoldButton_Click(object sender, RoutedEventArgs e)      
+        private void BoldButton_Click(object sender, RoutedEventArgs e)
         {
-            bool isButtonChecked = (sender as ToggleButton).IsChecked ?? false;
+            var isButtonChecked = (((ToggleButton)sender)).IsChecked ?? false;
 
-            if (isButtonChecked)
-                ContentRichTextBox.Selection.ApplyPropertyValue(Inline.FontWeightProperty, FontWeights.Bold);
-            else
-                ContentRichTextBox.Selection.ApplyPropertyValue(Inline.FontWeightProperty, FontWeights.Normal);
-
+            ContentRichTextBox.Selection.ApplyPropertyValue(TextElement.FontWeightProperty, isButtonChecked ? FontWeights.Bold : FontWeights.Normal);
         }
 
         private void ContentRichTextBox_SelectionChanged(object sender, RoutedEventArgs e)
@@ -68,35 +83,35 @@ namespace EvernoteClone.View
             var selectedWeight = ContentRichTextBox.Selection.GetPropertyValue(FontWeightProperty);
             BoldButton.IsChecked = (selectedWeight != DependencyProperty.UnsetValue) && (selectedWeight.Equals(FontWeights.Bold));
 
-            var selectedStyle = ContentRichTextBox.Selection.GetPropertyValue(Inline.FontStyleProperty);
+            var selectedStyle = ContentRichTextBox.Selection.GetPropertyValue(TextElement.FontStyleProperty);
             ItalicButton.IsChecked = (selectedStyle != DependencyProperty.UnsetValue) && (selectedStyle.Equals(FontStyles.Italic));
 
             var selectedDecoration = ContentRichTextBox.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
             UnderlineButton.IsChecked = (selectedDecoration !=  DependencyProperty.UnsetValue) && (selectedDecoration.Equals(TextDecorations.Underline));
 
-            FontFamilyComboBox.SelectedItem = ContentRichTextBox.Selection.GetPropertyValue(Inline.FontFamilyProperty);
-            FontSizeComboBox.Text = (ContentRichTextBox.Selection.GetPropertyValue(Inline.FontSizeProperty)).ToString();
+            FontFamilyComboBox.SelectedItem = ContentRichTextBox.Selection.GetPropertyValue(TextElement.FontFamilyProperty);
+            FontSizeComboBox.Text = (ContentRichTextBox.Selection.GetPropertyValue(TextElement.FontSizeProperty)).ToString();
         }
 
         private void ItalicButton_Click(object sender, RoutedEventArgs e)
         {
-            bool isButtonEnabled = (sender as ToggleButton).IsChecked ?? false;
+            var isButtonEnabled = ((ToggleButton)sender).IsChecked ?? false;
 
             if(isButtonEnabled)
-                ContentRichTextBox.Selection.ApplyPropertyValue(Inline.FontStyleProperty, FontStyles.Italic);
+                ContentRichTextBox.Selection.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Italic);
             else
-                ContentRichTextBox.Selection.ApplyPropertyValue(Inline.FontStyleProperty, FontStyles.Normal);
+                ContentRichTextBox.Selection.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
         }
 
         private void UnderlineButton_Click(object sender, RoutedEventArgs e)
         {
-            bool isButtonEnabled = (sender as ToggleButton).IsChecked ?? false;
+            var isButtonEnabled = ((ToggleButton)sender).IsChecked ?? false;
 
             if(isButtonEnabled)
                 ContentRichTextBox.Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, TextDecorations.Underline);
             else
             {
-                (ContentRichTextBox.Selection.GetPropertyValue(Inline.TextDecorationsProperty) as TextDecorationCollection).TryRemove(TextDecorations.Underline, out TextDecorationCollection textDecorations);
+                ((TextDecorationCollection)ContentRichTextBox.Selection.GetPropertyValue(Inline.TextDecorationsProperty)).TryRemove(TextDecorations.Underline, out var textDecorations);
                 ContentRichTextBox.Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, textDecorations);
             }
         }
@@ -105,13 +120,26 @@ namespace EvernoteClone.View
         {
             if(FontFamilyComboBox.SelectedItem is not null)
             {
-                ContentRichTextBox.Selection.ApplyPropertyValue(Inline.FontFamilyProperty, FontFamilyComboBox.SelectedItem);
+                ContentRichTextBox.Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, FontFamilyComboBox.SelectedItem);
             }
         }
 
         private void FontSizeComboBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            ContentRichTextBox.Selection.ApplyPropertyValue(Inline.FontSizeProperty, FontSizeComboBox.Text);
+            ContentRichTextBox.Selection.ApplyPropertyValue(TextElement.FontSizeProperty, FontSizeComboBox.Text);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var rtfFile = Path.Combine(Environment.CurrentDirectory, $"{_viewModel.SelectedNote.Id}.rtf");
+            _viewModel.SelectedNote.FileLocation = rtfFile;
+            DatabaseHelper.Update(_viewModel.SelectedNote);
+            
+           var fileStream = new FileStream(rtfFile, FileMode.Create);
+           var contents = new TextRange(ContentRichTextBox.Document.ContentStart, ContentRichTextBox.Document.ContentEnd);
+           contents.Save(fileStream, DataFormats.Rtf);
+           
+           
         }
     }
 }
