@@ -34,6 +34,14 @@ namespace EvernoteClone.View
             FontSizeComboBox.ItemsSource = fontSizes;
         }
 
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+            if (!string.IsNullOrEmpty(App.UserId)) return;
+            var loginWindow = new LoginWindow();
+            loginWindow.ShowDialog();
+        }
+
         private void ViewModel_SelectedNoteChanged(object sender, EventArgs e)
         {
             ContentRichTextBox.Document.Blocks.Clear();
