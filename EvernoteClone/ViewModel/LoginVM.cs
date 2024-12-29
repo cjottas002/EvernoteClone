@@ -19,8 +19,6 @@ namespace EvernoteClone.ViewModel
         }
 
         private Visibility loginVis;
-
-
         public Visibility LoginVis
         {
             get { return this.loginVis; }
@@ -35,10 +33,10 @@ namespace EvernoteClone.ViewModel
         public Visibility registerVis;
         public Visibility RegisterVis
         {
-            get => this.loginVis;
+            get => this.registerVis;
             set 
             { 
-                this.loginVis = value; 
+                this.registerVis = value; 
                 OnPropertyChanged(nameof(RegisterVis));
             }
         }
@@ -65,12 +63,12 @@ namespace EvernoteClone.ViewModel
             if (this.isShowingRegister)
             {
                 this.RegisterVis = Visibility.Visible;
-                this.loginVis = Visibility.Collapsed;
+                this.LoginVis = Visibility.Collapsed;
             }
             else
             {
                 this.RegisterVis = Visibility.Collapsed;
-                this.loginVis = Visibility.Visible;
+                this.LoginVis = Visibility.Visible;
             }
         }
 
