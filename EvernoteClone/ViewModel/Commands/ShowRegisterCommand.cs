@@ -3,9 +3,9 @@ using System.Windows.Input;
 
 namespace EvernoteClone.ViewModel.Commands
 {
-    public class ShowRegisterCommand(LoginVM vm) : ICommand
+    public class ShowRegisterCommand(LoginVm vm) : ICommand
     {
-        public LoginVM ViewModel { get; set; } = vm;
+        public LoginVm ViewModel { get; set; } = vm;
 
         public event EventHandler CanExecuteChanged;
 

@@ -8,31 +8,25 @@ using EvernoteClone.Model;
 
 namespace EvernoteClone.ViewModel.Commands
 {
-    public class RegisterCommand(LoginVm vm) : ICommand
+    public class LoginCommand(LoginVm vm) : ICommand
     {
         public LoginVm ViewModel { get; set; } = vm;
         public event EventHandler CanExecuteChanged;
 
         public bool CanExecute(object parameter)
         {
-            if(parameter is not User user)
+            if (parameter is not User user)
                 return false;
             
             if(string.IsNullOrEmpty(user.UserName))
                 return false;
             
-            if(string.IsNullOrEmpty(user.Password))
-                return false;
-            
-            if(string.IsNullOrEmpty(user.ConfirmPassword))
-                return false;
-            
-            return user.Password == user.ConfirmPassword;
+            return !string.IsNullOrEmpty(user.Password);
         }
 
         public void Execute(object parameter)
         {
-            this.ViewModel.Register();
+            this.ViewModel.Login();
         }
     }
 }
