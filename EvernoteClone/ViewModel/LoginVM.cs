@@ -1,13 +1,17 @@
-﻿using EvernoteClone.Model;
+﻿using System;
+using EvernoteClone.Model;
 using EvernoteClone.ViewModel.Commands;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows;
+using EvernoteClone.ViewModel.Helpers;
 
 namespace EvernoteClone.ViewModel
 {
     public class LoginVm : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+        public event EventHandler Authenticated;
 
         private bool _isShowingRegister = false;
 
@@ -172,14 +176,21 @@ namespace EvernoteClone.ViewModel
             }
         }
 
-        public void Login()
+        public async Task LoginAsync()
         {
+            var result = await FirebaseAuthHelper.LoginAsync(this.User);
+            
+            if(!result) return;
+            this.Authenticated?.Invoke(this, EventArgs.Empty);
             
         }
 
-        public void Register()
+        public async Task Register()
         {
+            var result = await FirebaseAuthHelper.RegisterAsync(this.User);
             
+            if(!result) return;
+            this.Authenticated?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnPropertyChanged(string propertyName) 

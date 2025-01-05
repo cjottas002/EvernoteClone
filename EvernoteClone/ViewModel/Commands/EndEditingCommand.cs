@@ -14,10 +14,10 @@ public class EndEditingCommand(NotesVm vm) : ICommand
         return true;
     }
 
-    public void Execute(object parameter)
+    public async void Execute(object parameter)
     {
         if (parameter is Notebook notebook)
-            ViewModel.StopEditing(notebook);
+            await ViewModel.StopEditing(notebook);
     }
 
 }

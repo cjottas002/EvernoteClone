@@ -1,21 +1,18 @@
-﻿using SQLite;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
-namespace EvernoteClone.Model
+namespace EvernoteClone.Model;
+
+public interface IHasId
 {
-    public class Note
-    {
-        [PrimaryKey, AutoIncrement]
-        public int Id { get; set; }
-        [Indexed]
-        public int NotebookId { get; set; }
-        public string Title { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdateAt { get; set; }
-        public string FileLocation { get; set; }
-    }
+    public string Id { get; set; }
+}
+
+public class Note : IHasId
+{
+    public string Id { get; set; }
+    public string NotebookId { get; set; }
+    public string Title { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdateAt { get; set; }
+    public string FileLocation { get; set; }
 }

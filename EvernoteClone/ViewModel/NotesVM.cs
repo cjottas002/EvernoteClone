@@ -5,6 +5,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace EvernoteClone.ViewModel
@@ -22,7 +23,7 @@ namespace EvernoteClone.ViewModel
             {
                 _selectedNotebook = value;
                 OnPropertyChanged(nameof(SelectedNotebook));
-                this.GetNotes();
+                _ = this.LoadNotesAsync();
             }
         }
         
@@ -39,7 +40,6 @@ namespace EvernoteClone.ViewModel
         }
 
         private Visibility _isVisible;
-
         public Visibility IsVisible
         {
             get => _isVisible;
@@ -65,27 +65,37 @@ namespace EvernoteClone.ViewModel
             this.EditCommand = new EditCommand(this);
             this.EndEditingCommand = new EndEditingCommand(this);
             
-            Notebooks = new ObservableCollection<Notebook>();
-            Notes = new ObservableCollection<Note>();
+            this.Notebooks = [];
+            this.Notes = [];
             
-            IsVisible = Visibility.Collapsed;
+            this.IsVisible = Visibility.Collapsed;
 
-            this.GetNotebooks();
+            _ = this.InitializeAsync();
+        }
+        
+        private async Task LoadNotesAsync()
+        {
+            await GetNotes();
+        }
+        
+        private async Task InitializeAsync()
+        {
+            await GetNotebooks();
         }
 
-        public void CreateNotebook()
+        public async Task CreateNotebook()
         {
             var notebook = new Notebook()
             {
-                Name = "Notebook"
+                Name = "Notebook",
+                UserId = App.UserId
             };
 
-            DatabaseHelper.Insert(notebook);
-
-            this.GetNotebooks();
+            await DatabaseHelper.Insert(notebook);
+            await this.GetNotebooks();
         }
 
-        public void CreateNote(int notebookId)
+        public async Task CreateNote(string notebookId)
         {
             var newNote = new Note()
             {
@@ -95,14 +105,16 @@ namespace EvernoteClone.ViewModel
                 Title = $"Note for {DateTime.Now}"
             };
 
-            DatabaseHelper.Insert(newNote);
-
-            this.GetNotes();
+            await DatabaseHelper.Insert(newNote);
+            await this.GetNotes();
         }
 
-        private void GetNotebooks()
+        private async Task GetNotebooks()
         {
-            var notebooks = DatabaseHelper.Read<Notebook>();
+            var notebooks = (await DatabaseHelper
+                    .Read<Notebook>())
+                    .Where(n => n.UserId == App.UserId)
+                    .ToList();
 
             Notebooks.Clear();
             foreach (var notebook in notebooks)
@@ -111,21 +123,18 @@ namespace EvernoteClone.ViewModel
             }
         }
 
-        private void GetNotes()
+        private async Task GetNotes()
         {
-            if (this.SelectedNotebook is not null)
+            if (this.SelectedNotebook is null) return;
+            var notes = (await DatabaseHelper
+                .Read<Note>())
+                .Where(n => n.NotebookId == this.SelectedNotebook.Id)
+                .ToList();
+
+            this.Notes.Clear();
+            foreach (var note in notes)
             {
-
-                var notes = DatabaseHelper
-                    .Read<Note>()
-                    .Where(n => n.NotebookId == this.SelectedNotebook.Id)
-                    .ToList();
-
-                this.Notes.Clear();
-                foreach (var note in notes)
-                {
-                    this.Notes.Add(note);
-                }
+                this.Notes.Add(note);
             }
         }
 
@@ -139,11 +148,11 @@ namespace EvernoteClone.ViewModel
             IsVisible = Visibility.Visible;
         }
         
-        public void StopEditing(Notebook notebook)
+        public async Task StopEditing(Notebook notebook)
         {
             IsVisible = Visibility.Collapsed;
-            DatabaseHelper.Update(notebook);
-            GetNotebooks();
+            await DatabaseHelper.Update(notebook);
+            await this.GetNotebooks();
         }
     }
 }

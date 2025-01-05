@@ -1,16 +1,11 @@
-﻿using EvernoteClone.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Windows.Input;
 
 namespace EvernoteClone.ViewModel.Commands
 {
     public class NewNotebookCommand(NotesVm vm) : ICommand
     {
-        public NotesVm ViewModel { get; set; } = vm;
+        private NotesVm ViewModel { get; set; } = vm;
         public event EventHandler CanExecuteChanged;
 
         public bool CanExecute(object parameter)
@@ -18,9 +13,9 @@ namespace EvernoteClone.ViewModel.Commands
             return true;    
         }
 
-        public void Execute(object parameter)
+        public async void Execute(object parameter)
         {
-            this.ViewModel.CreateNotebook();    
+            await ViewModel.CreateNotebook();
         }
     }
 }

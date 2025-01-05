@@ -10,24 +10,23 @@ namespace EvernoteClone.ViewModel.Commands
 {
     public class NewNoteCommand(NotesVm vm) : ICommand
     {
-        public NotesVm VM { get; set; } = vm;
+        private NotesVm ViewModel { get; set; } = vm;
         public event EventHandler CanExecuteChanged
         {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
         }
 
         public bool CanExecute(object parameter)
         {
             var selectedNotebook = parameter as Notebook;
-            if (selectedNotebook != null) return true;
-            return false;
+            return selectedNotebook != null;
         }
 
-        public void Execute(object parameter)
+        public async void Execute(object parameter)
         {
             var selectedNotebook = parameter as Notebook;
-            VM.CreateNote(selectedNotebook.Id);
+            await ViewModel.CreateNote(selectedNotebook?.Id);
         }
     }
 }
