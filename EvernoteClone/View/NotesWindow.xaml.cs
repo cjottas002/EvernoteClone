@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Azure.Storage.Blobs;
 using EvernoteClone.ViewModel;
 using EvernoteClone.ViewModel.Helpers;
 using Microsoft.CognitiveServices.Speech;
@@ -42,13 +44,15 @@ namespace EvernoteClone.View
             loginWindow.ShowDialog();
         }
 
-        private void ViewModel_SelectedNoteChanged(object sender, EventArgs e)
+        private async void ViewModel_SelectedNoteChanged(object sender, EventArgs e)
         {
             ContentRichTextBox.Document.Blocks.Clear();
-            
+
             if (_viewModel.SelectedNote?.FileLocation == null) return;
-            
-            var fs = new FileStream(_viewModel.SelectedNote.FileLocation, FileMode.Open);
+
+            var downloadPath = $"{_viewModel.SelectedNote.Id}.rtf";
+            await new BlobClient(new Uri(_viewModel.SelectedNote.FileLocation)).DownloadToAsync(downloadPath);
+            var fs = new FileStream(downloadPath, FileMode.Open);
             var contents = new TextRange(ContentRichTextBox.Document.ContentStart, ContentRichTextBox.Document.ContentEnd);
             contents.Load(fs, DataFormats.Rtf);
         }
@@ -95,7 +99,7 @@ namespace EvernoteClone.View
             ItalicButton.IsChecked = (selectedStyle != DependencyProperty.UnsetValue) && (selectedStyle.Equals(FontStyles.Italic));
 
             var selectedDecoration = ContentRichTextBox.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
-            UnderlineButton.IsChecked = (selectedDecoration !=  DependencyProperty.UnsetValue) && (selectedDecoration.Equals(TextDecorations.Underline));
+            UnderlineButton.IsChecked = (selectedDecoration != DependencyProperty.UnsetValue) && (selectedDecoration.Equals(TextDecorations.Underline));
 
             FontFamilyComboBox.SelectedItem = ContentRichTextBox.Selection.GetPropertyValue(TextElement.FontFamilyProperty);
             FontSizeComboBox.Text = (ContentRichTextBox.Selection.GetPropertyValue(TextElement.FontSizeProperty)).ToString();
@@ -105,7 +109,7 @@ namespace EvernoteClone.View
         {
             var isButtonEnabled = ((ToggleButton)sender).IsChecked ?? false;
 
-            if(isButtonEnabled)
+            if (isButtonEnabled)
                 ContentRichTextBox.Selection.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Italic);
             else
                 ContentRichTextBox.Selection.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
@@ -115,7 +119,7 @@ namespace EvernoteClone.View
         {
             var isButtonEnabled = ((ToggleButton)sender).IsChecked ?? false;
 
-            if(isButtonEnabled)
+            if (isButtonEnabled)
                 ContentRichTextBox.Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, TextDecorations.Underline);
             else
             {
@@ -126,7 +130,7 @@ namespace EvernoteClone.View
 
         private void FontFamilyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(FontFamilyComboBox.SelectedItem is not null)
+            if (FontFamilyComboBox.SelectedItem is not null)
             {
                 ContentRichTextBox.Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, FontFamilyComboBox.SelectedItem);
             }
@@ -139,15 +143,30 @@ namespace EvernoteClone.View
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            var rtfFile = Path.Combine(Environment.CurrentDirectory, $"{_viewModel.SelectedNote.Id}.rtf");
-            _viewModel.SelectedNote.FileLocation = rtfFile;
+            var fileName = $"{_viewModel.SelectedNote.Id}.rtf";
+            var rtfFile = Path.Combine(Environment.CurrentDirectory, fileName);
+
+            using var fileStream = new FileStream(rtfFile, FileMode.Create);
+            var contents = new TextRange(ContentRichTextBox.Document.ContentStart, ContentRichTextBox.Document.ContentEnd);
+            contents.Save(fileStream, DataFormats.Rtf);
+
+            _viewModel.SelectedNote.FileLocation = await UpdateFileAsync(rtfFile, fileName);
             await DatabaseHelper.Update(_viewModel.SelectedNote);
-            
-           var fileStream = new FileStream(rtfFile, FileMode.Create);
-           var contents = new TextRange(ContentRichTextBox.Document.ContentStart, ContentRichTextBox.Document.ContentEnd);
-           contents.Save(fileStream, DataFormats.Rtf);
-           
-           
+
+        }
+
+        private async Task<string> UpdateFileAsync(string rtfFilePath, string fileName)
+        {
+            var connectionString = "";
+            var containerName = "notes";
+
+            var container = new BlobContainerClient(connectionString, containerName);
+            await container.CreateIfNotExistsAsync();
+
+            var blob = container.GetBlobClient(fileName);
+            await blob.UploadAsync(rtfFilePath);
+
+            return $"https://evernotestoragelpa.blob.core.windows.net/notes/{fileName}";
         }
     }
 }
