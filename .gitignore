@@ -398,6 +398,14 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+.idea/
+*.DotSettings
+*.DotSettings.user
+
+# SQLite database files
+*.db3
+*.sqlite
+*.sqlite3
 
 ### Windows ###
 # Windows thumbnail cache files

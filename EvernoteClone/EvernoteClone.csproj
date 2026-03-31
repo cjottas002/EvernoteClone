@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
-    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.41.1" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.48.2" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.142" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
   </ItemGroup>
 
